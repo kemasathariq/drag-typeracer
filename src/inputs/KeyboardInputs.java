@@ -7,29 +7,30 @@ import main.GamePanel;
 public class KeyboardInputs implements KeyListener {
 
     private GamePanel gamePanel;
-
+    
     public KeyboardInputs(GamePanel gamePanel) {
         this.gamePanel = gamePanel;
     }
 
     @Override
     public void keyTyped(KeyEvent e) {
-    // Check with the Brain
-    boolean correct = gamePanel.getWordManager().checkKey(e.getKeyChar());
-    
-    // If correct, move the Body
-    if(correct) {
-        gamePanel.getPlayerCar().accelerate();
+        // Jika game selesai, matikan fungsi mengetik
+        if (gamePanel.isFinished) return;
+
+        boolean correct = gamePanel.getWordManager().checkKey(e.getKeyChar());
+        if(correct) {
+            gamePanel.updatePlayerMovement();
+        }
     }
-}
 
     @Override
     public void keyPressed(KeyEvent e) {
-        // We don't need this for typing, but good for "Pause" or "Exit"
+        // Jika Game Selesai DAN tombol yang ditekan adalah ENTER
+        if (gamePanel.isFinished && e.getKeyCode() == KeyEvent.VK_ENTER) {
+            gamePanel.restartGame();
+        }
     }
 
     @Override
-    public void keyReleased(KeyEvent e) {
-        // Not needed for now
-    }
+    public void keyReleased(KeyEvent e) {}
 }

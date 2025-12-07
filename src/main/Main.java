@@ -3,7 +3,7 @@ package main;
 import javax.swing.JFrame;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main() {
         JFrame window = new JFrame();
         
         // This closes the app when you click the X button
