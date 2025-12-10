@@ -7,27 +7,29 @@ import java.awt.Graphics2D;
 import java.util.Random;
 
 public class WordManager {
-
-    // Kalimat dipecah jadi kata-kata
     private String[] words; 
-    private int currentWordIndex = 0; // Kata ke berapa yang sedang diketik
-    
-    // Apa yang sedang diketik user di Input Box
+    private int currentWordIndex = 0;
     private String userBuffer = ""; 
     
-    // Status apakah input saat ini salah? (Untuk bikin kotak jadi merah)
     private boolean isError = false;
-    
-    // Untuk tracking progress mobil
+
     private int totalCharsTypedCorrectly = 0;
     private int totalCharsInSentence = 0;
-
-    private String[] dictionary = {
-        "izinkan ku lukis senja mengukir namamu di sana",
-        "mendengar kamu bercerita menangis tertawa",
-        "biar ku lukis malam bawa kamu bintang bintang",
-        "teknik informatika its tempat kita berkarya",
-        "koding itu menyenangkan jika tidak ada error"
+    
+    private String[] wordBank = {
+        "aku", "kamu", "dia", "kita", "mereka", "dan", "atau", "tetapi", "jika", "karena",
+        "rumah", "sekolah", "kampus", "kantor", "jalan", "mobil", "motor", "kereta", "pesawat",
+        "makan", "minum", "tidur", "lari", "jalan", "belajar", "kerja", "main", "coding",
+        "java", "python", "script", "data", "server", "klien", "wifi", "internet", "mouse",
+        "buku", "pena", "kertas", "meja", "kursi", "lampu", "pintu", "jendela", "atap",
+        "merah", "biru", "hijau", "kuning", "hitam", "putih", "abu", "ungu", "jingga",
+        "cepat", "lambat", "besar", "kecil", "tinggi", "rendah", "panjang", "pendek",
+        "informatika", "sistem", "algoritma", "struktur", "objek", "kelas", "metode",
+        "variabel", "fungsi", "logika", "teknologi", "digital", "program", "aplikasi",
+        "hujan", "panas", "dingin", "siang", "malam", "pagi", "sore", "senja", "fajar",
+        "cinta", "rindu", "senang", "sedih", "marah", "takut", "berani", "kuat", "lemah",
+        "indonesia", "surabaya", "jakarta", "bandung", "jogja", "malang", "bali",
+        "satu", "dua", "tiga", "empat", "lima", "sepuluh", "ratus", "ribu", "juta"
     };
     
     private Random random;
@@ -38,45 +40,45 @@ public class WordManager {
     }
 
     public void generateNewSentence() {
-        String fullSentence = dictionary[random.nextInt(dictionary.length)];
-        words = fullSentence.split(" "); // Pecah jadi array kata
+        StringBuilder sb = new StringBuilder();
+        int wordCount = 30; 
+        
+        for (int i = 0; i < wordCount; i++) {
+            String randomWord = wordBank[random.nextInt(wordBank.length)];
+            sb.append(randomWord);
+            if (i < wordCount - 1) {
+                sb.append(" ");
+            }
+        }
+        
+        String fullSentence = sb.toString();
+        
+        words = fullSentence.split(" "); 
         currentWordIndex = 0;
         userBuffer = "";
         isError = false;
         totalCharsTypedCorrectly = 0;
-        totalCharsInSentence = fullSentence.length(); // + spasi antar kata sebenarnya
+        totalCharsInSentence = fullSentence.length(); 
     }
-    
-    // --- LOGIC UTAMA MENGETIK ---
+
     public void typeKey(char key) {
-        // 1. Handle BACKSPACE (Hapus karakter)
-        if (key == '\b') { // Kode ASCII untuk Backspace
+        if (key == '\b') { // Backspace
             if (userBuffer.length() > 0) {
                 userBuffer = userBuffer.substring(0, userBuffer.length() - 1);
             }
         } 
-        // 2. Handle SPASI (Submit kata)
         else if (key == ' ') {
             String targetWord = words[currentWordIndex];
-            // Hanya pindah jika user mengetik kata dengan BENAR
             if (userBuffer.equals(targetWord)) {
-                totalCharsTypedCorrectly += targetWord.length() + 1; // +1 untuk spasinya
+                totalCharsTypedCorrectly += targetWord.length() + 1;
                 userBuffer = ""; // Reset buffer
-                currentWordIndex++; // Pindah ke kata selanjutnya
-                
-                // Cek apakah kalimat habis
+                currentWordIndex++;
+
                 if (currentWordIndex >= words.length) {
                     generateNewSentence();
                 }
-            } else {
-                // Kalau user tekan spasi tapi katanya salah/belum selesai?
-                // Opsional: Bisa dikosongkan buffer-nya (hukuman) atau dibiarkan error
-                // Di sini kita biarkan saja (user harus hapus manual)
             }
-        }
-        // 3. Handle HURUF BIASA
-        else {
-            // Batasi panjang input max 20 char agar tidak kebablasan
+        } else {
             if (userBuffer.length() < 20) {
                 userBuffer += key;
             }
@@ -84,122 +86,169 @@ public class WordManager {
         
         checkErrorStatus();
     }
-    
-    // Cek apakah buffer sesuai dengan target kata
+
     private void checkErrorStatus() {
         if (currentWordIndex >= words.length) return;
         
         String targetWord = words[currentWordIndex];
-        
-        // Jika user mengetik lebih panjang dari kata asli, pasti error
+
         if (userBuffer.length() > targetWord.length()) {
             isError = true;
-        } 
-        // Jika apa yang diketik TIDAK COCOK dengan awal kata target
-        else if (!targetWord.startsWith(userBuffer)) {
+        } else if (!targetWord.startsWith(userBuffer)) {
             isError = true;
-        } 
-        else {
+        } else {
             isError = false;
         }
     }
 
-    public boolean isError() { return isError; }
-    public String getUserBuffer() { return userBuffer; }
+    public boolean isError() { 
+        return isError; 
+    }
+    public String getUserBuffer() { 
+        return userBuffer; 
+    }
     
     public double getProgressPercent() {
-        // Progress dihitung dari kata yang SUDAH selesai + huruf benar di kata saat ini
         int currentProgress = totalCharsTypedCorrectly;
-        if (!isError && currentWordIndex < words.length) {
-            currentProgress += userBuffer.length();
+
+        if (currentWordIndex < words.length) {
+            String targetWord = words[currentWordIndex];
+            int matchingChars = 0;
+            int limit = Math.min(userBuffer.length(), targetWord.length());
+            
+            for (int i = 0; i < limit; i++) {
+                if (userBuffer.charAt(i) == targetWord.charAt(i)) {
+                    matchingChars++;
+                } else {
+                    break; 
+                }
+            }
+            currentProgress += matchingChars;
         }
         return (double) currentProgress / totalCharsInSentence;
     }
 
-    // --- VISUALISASI SEPERTI GAMBAR ---
     public void draw(Graphics2D g2, int screenWidth) {
-        g2.setFont(new Font("Consolas", Font.BOLD, 24));
+        g2.setFont(new Font("Consolas", Font.BOLD, 22));
         FontMetrics fm = g2.getFontMetrics();
         
         int startX = 50;
-        int y = 450; // Posisi teks kalimat
-        int currentX = startX;
+        int lineHeight = 32;
+        int maxLineWidth = screenWidth - 100;
+
+        int activeLine = 0;
+        int tempX = startX;
+        int currentLineIndex = 0;
         
-        // Loop setiap KATA
+        for (int i = 0; i < words.length; i++) {
+            String content = words[i];
+            if (i == currentWordIndex && userBuffer.length() > words[i].length()) {
+                content += userBuffer.substring(words[i].length());
+            }
+            
+            int wordWidth = fm.stringWidth(content + " ");
+            
+            if (tempX + wordWidth > startX + maxLineWidth) {
+                currentLineIndex++;
+                tempX = startX;
+            }
+            
+            if (i == currentWordIndex) {
+                activeLine = currentLineIndex;
+            }
+            tempX += wordWidth;
+        }
+        // error tetap scroll
+        int scrollPixelY = activeLine * lineHeight;
+        int startY = 435; 
+
+        java.awt.Shape originalClip = g2.getClip();
+        g2.setClip(0, 400, screenWidth, 75); 
+        
+        int drawX = startX;
+        int drawY = startY - scrollPixelY; 
+        
         for (int i = 0; i < words.length; i++) {
             String word = words[i];
+            String contentForWidth = word;
+            String excess = "";
+            if (i == currentWordIndex && userBuffer.length() > word.length()) {
+                excess = userBuffer.substring(word.length());
+                contentForWidth += excess;
+            }
             
-            // KATA YANG SUDAH SELESAI (Hijau)
-            if (i < currentWordIndex) {
-                g2.setColor(new Color(34, 139, 34)); // Forest Green
-                g2.drawString(word + " ", currentX, y);
-                currentX += fm.stringWidth(word + " ");
-            } 
-            // KATA YANG SEDANG DIKETIK (Target)
-            else if (i == currentWordIndex) {
-                // Gambar per karakter untuk handle highlight merah
-                for (int j = 0; j < word.length(); j++) {
-                    char c = word.charAt(j);
-                    String s = String.valueOf(c);
-                    int charW = fm.stringWidth(s);
-                    
-                    boolean charIsWrong = false;
-                    // Logic Merah: Jika index j < buffer.length DAN buffer[j] != word[j]
-                    if (j < userBuffer.length()) {
-                         if (userBuffer.charAt(j) != c) {
-                             charIsWrong = true;
-                         }
-                    }
-                    
-                    // Highlight Background Merah jika salah
-                    if (charIsWrong) {
-                        g2.setColor(new Color(255, 100, 100, 180)); // Merah transparan
-                        g2.fillRect(currentX, y - 20, charW, 25);
-                    }
-                    else if (j < userBuffer.length()) {
-                        // Karakter benar yang sedang diketik (Hijau muda/stabilo?)
-                        g2.setColor(new Color(200, 255, 200, 100)); // Hijau background tipis
-                        g2.fillRect(currentX, y - 20, charW, 25);
-                    }
-                    
-                    // Warna Huruf
-                    if (charIsWrong) g2.setColor(Color.RED); // Huruf merah kalau salah
-                    else if (j < userBuffer.length()) g2.setColor(new Color(0, 100, 0)); // Hijau tua kalau sudah diketik benar
-                    else g2.setColor(Color.BLACK); // Hitam kalau belum diketik
-                    
-                    // Underline kata yang sedang aktif
-                    g2.drawLine(currentX, y+2, currentX+charW, y+2);
+            int wordWidth = fm.stringWidth(contentForWidth + " ");
 
-                    g2.drawString(s, currentX, y);
-                    currentX += charW;
-                }
-                
-                // Jika user mengetik LEBIH dari panjang kata (Huruf hantu merah)
-                if (userBuffer.length() > word.length()) {
-                    String excess = userBuffer.substring(word.length());
-                    g2.setColor(Color.RED);
-                    g2.drawString(excess, currentX, y);
-                    currentX += fm.stringWidth(excess);
-                }
-                
-                // Spasi setelah kata aktif
-                currentX += fm.stringWidth(" ");
-            } 
-            // KATA MASA DEPAN (Hitam/Abu)
-            else {
-                g2.setColor(Color.GRAY);
-                g2.drawString(word + " ", currentX, y);
-                currentX += fm.stringWidth(word + " ");
+            if (drawX + wordWidth > startX + maxLineWidth) {
+                drawX = startX;
+                drawY += lineHeight;
             }
-            
-            // Wrap text (pindah baris) jika mentok kanan
-            if (currentX > screenWidth - 100) {
-                currentX = startX;
-                y += 35;
+            if (drawY > 380 && drawY < 500) { 
+                if (i < currentWordIndex) {
+                    g2.setColor(new Color(34, 139, 34)); // Hijau
+                    g2.drawString(word + " ", drawX, drawY);
+                } 
+                else if (i == currentWordIndex) {
+                    int charX = drawX;
+                    for (int j = 0; j < word.length(); j++) {
+                        char c = word.charAt(j);
+                        String s = String.valueOf(c);
+                        int charW = fm.stringWidth(s);
+                        
+                        boolean charIsWrong = (j < userBuffer.length() && userBuffer.charAt(j) != c);
+                        if (charIsWrong) {
+                            g2.setColor(new Color(255, 100, 100, 180));
+                            g2.fillRect(charX, drawY - 20, charW, 25);
+                            g2.setColor(Color.RED);
+                        } else if (j < userBuffer.length()) {
+                            g2.setColor(new Color(200, 255, 200, 100));
+                            g2.fillRect(charX, drawY - 20, charW, 25);
+                            g2.setColor(new Color(0, 100, 0));
+                        } else {
+                            g2.setColor(Color.BLACK);
+                        }
+                        
+                        g2.drawString(s, charX, drawY);
+                        g2.drawLine(charX, drawY+2, charX+charW, drawY+2); // Underline
+                        charX += charW;
+                    }
+
+                    if (!excess.isEmpty()) {
+                        g2.setColor(Color.RED);
+                        g2.drawString(excess, charX, drawY);
+                    }
+                } 
+                else {
+                    g2.setColor(Color.GRAY);
+                    g2.drawString(word + " ", drawX, drawY);
+                }
             }
+            drawX += wordWidth;
         }
+        g2.setClip(originalClip);
     }
+    
     public int getTotalCharsTypedCorrectly() {
         return totalCharsTypedCorrectly;
+    }
+    
+    public int getTotalCharsInSentence() {
+        return totalCharsInSentence;
+    }
+    
+    public int getCurrentCorrectCharsCount() {
+        int count = totalCharsTypedCorrectly;
+        if (currentWordIndex < words.length) {
+            String targetWord = words[currentWordIndex];
+            int limit = Math.min(userBuffer.length(), targetWord.length());
+            for (int i = 0; i < limit; i++) {
+                if (userBuffer.charAt(i) == targetWord.charAt(i)) {
+                    count++;
+                } else {
+                    break;
+                }
+            }
+        }
+        return count;
     }
 }

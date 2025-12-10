@@ -14,25 +14,23 @@ public class KeyboardInputs implements KeyListener {
 
     @Override
     public void keyTyped(KeyEvent e) {
-        // 1. Jika game sudah selesai, jangan ngetik apa-apa
         if (gamePanel.isFinished) return;
-
-        // --- PERBAIKAN BUG DISINI ---
-        // 2. Abaikan tombol ENTER (karakter new line) agar tidak masuk ke Input Box
         if (e.getKeyChar() == '\n') return;
-        // -----------------------------
-        gamePanel.startRaceTimer();
-        // 3. Kirim karakter ke WordManager
-        gamePanel.getWordManager().typeKey(e.getKeyChar());
         
-        // 4. Update posisi player
+        gamePanel.startRaceTimer();
+
+        gamePanel.getWordManager().typeKey(e.getKeyChar());
         gamePanel.updatePlayerMovement();
     }
 
     @Override
     public void keyPressed(KeyEvent e) {
-        if (gamePanel.isFinished && e.getKeyCode() == KeyEvent.VK_ENTER) {
-            gamePanel.restartGame();
+        if (gamePanel.isFinished) {
+            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                gamePanel.restartGame();
+            } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                gamePanel.backToMenu();
+            }
         }
     }
 
