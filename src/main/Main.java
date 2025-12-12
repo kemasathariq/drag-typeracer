@@ -1,28 +1,58 @@
 package main;
 
+import java.awt.CardLayout;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 public class Main {
-    public static void main(String[] args) {
-        JFrame window = new JFrame();
-        
-        // This closes the app when you click the X button
+    
+    private JFrame window;
+    private JPanel mainContainer;
+    private CardLayout cardLayout;
+    
+    private MainMenuPanel menuPanel;
+    private GamePanel gamePanel;
+    private AssetManager assets;
+
+    public Main() {
+        window = new JFrame();
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setResizable(false);
-        window.setTitle("Code Drifter - Type to Race");
+        window.setTitle("TypeRace: Pixel Edition");
+
+        cardLayout = new CardLayout();
+        mainContainer = new JPanel(cardLayout);
+        assets = new AssetManager();
         
-        // Add the GamePanel (our game engine)
-        GamePanel gamePanel = new GamePanel();
-        window.add(gamePanel);
+        menuPanel = new MainMenuPanel(this, assets);
+        gamePanel = new GamePanel(assets, this); 
         
-        // Fit the window size to the preferred size of the GamePanel
+        mainContainer.add(menuPanel, "MENU"); // Beri nama "MENU"
+        mainContainer.add(gamePanel, "GAME"); // Beri nama "GAME"
+        
+        window.add(mainContainer);
         window.pack();
-        
-        // Center on screen
         window.setLocationRelativeTo(null);
         window.setVisible(true);
-        
-        // Start the game loop!
-        gamePanel.startGameThread();
+
+        cardLayout.show(mainContainer, "MENU");
+    }
+    
+    public void startGame(String difficulty) {
+        gamePanel.setupRace(difficulty); 
+        gamePanel.startRace();
+
+        cardLayout.show(mainContainer, "GAME");
+
+        gamePanel.requestFocusInWindow();
+    }
+
+    public void showMenu() {
+        cardLayout.show(mainContainer, "MENU");
+        menuPanel.requestFocusInWindow();
+    }
+
+    public static void main(String[] args) {
+        new Main();
     }
 }
